@@ -73,6 +73,9 @@ void testSchema() {
       test('record with null and int', () {
         expectRecord('{"type":"record", "name":"RecordWithNullAndInt", "fields":[{"type":"null", "name":"nullField"}, {"type":"int", "name":"intField"}]}', new Record('RecordWithNullAndInt', null, [new Field('nullField', new AvroNull(), null, 0), new Field('intField', new AvroInt(), null, 1)]));
       });
+      test('throws on undefined field type', () {
+        expect(() => new Schema.parse('{"type":"record", "name":"RecordWithUndefinedField", "fields":[{"type":"doesntexist", "name":"doesntexistField"}]}'), throwsA(predicate((AvroTypeError e) => e.message == 'Undefined type "doesntexist"')));
+      });
     });
     group('unions', () {
       test('not implemented', () {

@@ -26,9 +26,8 @@ final Map<String, Schema> _primitiveTypes = {
 class _SchemaParser {
   final String json;
 
-  Map<String, Schema> definedTypes = new Map.from(_primitiveTypes);
-
   _SchemaParser(this.json);
+  _TypeScope _typeScope = new _TypeScope();
 
   Schema parsedSchema() {
     var obj = JSON.parse(json);
@@ -45,10 +44,8 @@ class _SchemaParser {
       }
       switch (typeName) {
         case 'record':
-          var record = new Record(obj['name'], obj['namespace'], _fieldListFromJsonArray(obj['fields']));
-          if (record.name != null) {
-            definedTypes[record.name] = record;
-          }
+          var record = new Record(obj['name'], obj['namespace'], _fieldListFromJsonArray(obj['fields'], obj['namespace']));
+          _typeScope.addType(record.name, record.namespace, record);
           return record;
         default: throw new AvroTypeError('Undefined type "$typeName"');
       }
@@ -59,15 +56,36 @@ class _SchemaParser {
     }
   }
 
-  List<Field> _fieldListFromJsonArray(List rawFields) {
+  List<Field> _fieldListFromJsonArray(List rawFields, String inNamespace) {
     var fields = [];
     for (int i = 0; i < rawFields.length; i++) {
       var f = rawFields[i];
-      fields.add(new Field(f['name'], definedTypes[f['type']], f['default'], i));
+      fields.add(new Field(f['name'], _typeScope.lookupType(f['type'], inNamespace), f['default'], i));
     }
     return fields;
   }
 }
+
+class _TypeScope {
+  Map<String, Schema> _definedTypes = new Map.from(_primitiveTypes);
+
+  void addType(String typeName, String namespace, Schema schema) {
+    if (typeName != null) {
+      var qualifiedName = namespace != null ? '$namespace.$typeName' : typeName;
+      _definedTypes[qualifiedName] = schema;
+    }
+  }
+
+  Schema lookupType(String typeIdentifier, String relativeToNamespace) {
+    // TODO: look up relative to namespace
+    if (_definedTypes.containsKey(typeIdentifier)) {
+      return _definedTypes[typeIdentifier];
+    } else {
+      throw new AvroTypeError('Undefined type "$typeIdentifier"');
+    }
+  }
+}
+
 
 /**
  * Represents an Avro schema. See
