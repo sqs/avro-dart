@@ -167,6 +167,7 @@ class Record implements Schema {
   Record(this.name, this.namespace, this.fields);
   String toString() => 'Record($name, $namespace, $fields)';
   bool operator==(o) => o is Record && this.name == o.name && this.namespace == o.namespace && Field.fieldListsEqual(this.fields, o.fields);
+  // TODO: hashCode
 }
 
 class Field {
