@@ -54,7 +54,7 @@ class _SchemaParser {
         default: throw new AvroTypeError('Undefined type "$typeName"');
       }
     } else if (obj is List) {
-      throw new NotImplementedException();
+      return new Union(obj.map((branch) => _parse(branch, inNamespace)));
     } else {
       throw new SchemaParseError('Expected JSON string, object, or array; got $json');
     }
@@ -187,5 +187,22 @@ class Field {
       if (fs1[i] != fs2[i]) return false;
     }
     return true;
+  }
+}
+
+class Union implements Schema {
+  final List<Schema> branches;
+  Union(this.branches);
+
+  bool operator==(o) => o is Union && unionBranchesEqual(this.branches, o.branches);
+  // TODO: hashCode
+  String toString() => 'Union($branches)';
+
+  static unionBranchesEqual(List<Schema> bs1, List<Schema> bs2) {
+    if (bs1.length != bs2.length) return false;
+    for (int i = 0; i < bs1.length; i++) {
+      if (bs1[i] != bs2[i]) return false;
+    }
+    return true;    
   }
 }

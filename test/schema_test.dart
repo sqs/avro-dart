@@ -76,8 +76,14 @@ void testSchema() {
       });
     });
     group('unions', () {
-      test('not implemented', () {
-        expect(() => new Schema.parse('["string", "int"]'), throwsA(predicate((e) => e is NotImplementedException)));
+      test('union with no branches', () {
+        expect(new Schema.parse('[]'), new Union([]));
+      });
+      test('union with one branch', () {
+        expect(new Schema.parse('["string"]'), new Union([new AvroString()]));
+      });
+      test('union with two branches', () {
+        expect(new Schema.parse('["string", "int"]'), new Union([new AvroString(), new AvroInt()]));
       });
     });
   });
