@@ -64,6 +64,9 @@ void testSchema() {
       test('empty record', () {
         expectRecord('{"type":"record", "name":"EmptyRecord", "fields":[]}', new Record('EmptyRecord', null, []));
       });
+      test('empty record with namespace', () {
+        expectRecord('{"type":"record", "name":"EmptyRecord", "namespace":"a.b", "fields":[]}', new Record('EmptyRecord', 'a.b', []));
+      });
       test('record with null', () {
         expectRecord('{"type":"record", "name":"RecordWithNull", "fields":[{"type":"null", "name":"nullField"}]}', new Record('RecordWithNull', null, [new Field('nullField', new AvroNull(), null, 0)]));
       });
