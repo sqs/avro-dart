@@ -67,6 +67,9 @@ void testSchema() {
       test('record with null', () {
         expectRecord('{"type":"record", "name":"RecordWithNull", "fields":[{"type":"null", "name":"nullField"}]}', new Record('RecordWithNull', null, [new Field('nullField', new AvroNull(), null, 0)]));
       });
+      test('record with null and int', () {
+        expectRecord('{"type":"record", "name":"RecordWithNullAndInt", "fields":[{"type":"null", "name":"nullField"}, {"type":"int", "name":"intField"}]}', new Record('RecordWithNullAndInt', null, [new Field('nullField', new AvroNull(), null, 0), new Field('intField', new AvroInt(), null, 1)]));
+      });
     });
     group('unions', () {
       test('not implemented', () {
