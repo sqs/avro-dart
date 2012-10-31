@@ -29,13 +29,17 @@ class _SchemaParser {
   _SchemaParser(this.json);
   _TypeScope _typeScope = new _TypeScope();
 
-  Schema parsedSchema() {
-    var obj = JSON.parse(json);
+  Schema parsedSchema() => _parse(JSON.parse(json));
+
+  Schema _parse(obj, [String inNamespace = null]) {
     if (obj is String) {
-      if (_primitiveTypes.containsKey(obj)) {
-        return _primitiveTypes[obj];
+      var typeName = obj;
+      if (_primitiveTypes.containsKey(typeName)) {
+        return _primitiveTypes[typeName];
+      } else if (_typeScope.containsType(typeName, inNamespace)) {
+        return _typeScope.lookupType(typeName, inNamespace);
       } else {
-        throw new AvroTypeError('Undefined type "$obj"');
+        throw new AvroTypeError('Undefined type "$typeName"');
       }
     } else if (obj is Map) {
       String typeName = obj['type'];
@@ -60,7 +64,7 @@ class _SchemaParser {
     var fields = [];
     for (int i = 0; i < rawFields.length; i++) {
       var f = rawFields[i];
-      fields.add(new Field(f['name'], _typeScope.lookupType(f['type'], inNamespace), f['default'], i));
+      fields.add(new Field(f['name'], _parse(f['type'], inNamespace), f['default'], i));
     }
     return fields;
   }
@@ -84,6 +88,9 @@ class _TypeScope {
       throw new AvroTypeError('Undefined type "$typeIdentifier"');
     }
   }
+
+  bool containsType(String typeIdentifier, String relativeToNamespace) =>
+    lookupType(typeIdentifier, relativeToNamespace) != null;
 }
 
 

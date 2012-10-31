@@ -68,6 +68,9 @@ void testSchema() {
       test('record with null and int', () {
         expectRecord('{"type":"record", "name":"RecordWithNullAndInt", "fields":[{"type":"null", "name":"nullField"}, {"type":"int", "name":"intField"}]}', new Record('RecordWithNullAndInt', null, [new Field('nullField', new AvroNull(), null, 0), new Field('intField', new AvroInt(), null, 1)]));
       });
+      test('record with sub-record', () {
+        expectRecord('{"type":"record", "name":"RecordWithSubrecord", "fields":[{"type":{"type":"record","fields":[]}, "name":"subrecordField"}]}', new Record('RecordWithSubrecord', null, [new Field('subrecordField', new Record(null, null, []), null, 0)]));
+      });
       test('throws on undefined field type', () {
         expect(() => new Schema.parse('{"type":"record", "name":"RecordWithUndefinedField", "fields":[{"type":"doesntexist", "name":"doesntexistField"}]}'), throwsA(predicate((AvroTypeError e) => e.message == 'Undefined type "doesntexist"')));
       });
