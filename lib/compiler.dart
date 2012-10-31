@@ -1,0 +1,1 @@
+library avro_compiler;
