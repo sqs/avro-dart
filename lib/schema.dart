@@ -51,6 +51,10 @@ class _SchemaParser {
           var record = new Record(obj['name'], obj['namespace'], _fieldListFromJsonArray(obj['fields'], obj['namespace']));
           _typeScope.addType(record.name, record.namespace, record);
           return record;
+      case 'enum':
+          var e = new Enum(obj['name'], obj['namespace'], obj['symbols']);
+          _typeScope.addType(e.name, e.namespace, e);
+          return e;
         default: throw new AvroTypeError('Undefined type "$typeName"');
       }
     } else if (obj is List) {
@@ -187,6 +191,25 @@ class Field {
       if (fs1[i] != fs2[i]) return false;
     }
     return true;
+  }
+}
+
+class Enum implements Schema {
+  final String name;
+  final String namespace;
+  final List<String> symbols;
+  Enum(this.name, this.namespace, this.symbols);
+
+  bool operator==(o) => o is Enum && this.name == o.name && this.namespace == o.namespace && enumSymbolsEqual(this.symbols, o.symbols);
+  // TODO: hashCode
+  String toString() => 'Enum($name, $namespace, $symbols)';
+
+  static enumSymbolsEqual(List<Schema> s1, List<Schema> s2) {
+    if (s1.length != s2.length) return false;
+    for (int i = 0; i < s1.length; i++) {
+      if (s1[i] != s2[i]) return false;
+    }
+    return true;    
   }
 }
 

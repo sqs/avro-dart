@@ -75,6 +75,11 @@ void testSchema() {
         expect(() => new Schema.parse('{"type":"record", "name":"RecordWithUndefinedField", "fields":[{"type":"doesntexist", "name":"doesntexistField"}]}'), throwsA(predicate((AvroTypeError e) => e.message == 'Undefined type "doesntexist"')));
       });
     });
+    group('enums', () {
+      test('enum with two symbols', () {
+        expect(new Schema.parse('{"type":"enum", "name":"MyEnum", "symbols":["A","B"]}'), new Enum('MyEnum', null, ['A', 'B']));
+      });
+    });
     group('unions', () {
       test('union with no branches', () {
         expect(new Schema.parse('[]'), new Union([]));
