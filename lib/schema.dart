@@ -23,6 +23,51 @@ final Map<String, Schema> _primitiveTypes = {
  'string': new AvroString()
 };
 
+class _SchemaParser {
+  final String json;
+
+  Map<String, Schema> definedTypes = new Map.from(_primitiveTypes);
+
+  _SchemaParser(this.json);
+
+  Schema parsedSchema() {
+    var obj = JSON.parse(json);
+    if (obj is String) {
+      if (_primitiveTypes.containsKey(obj)) {
+        return _primitiveTypes[obj];
+      } else {
+        throw new AvroTypeError('Undefined type "$obj"');
+      }
+    } else if (obj is Map) {
+      String typeName = obj['type'];
+      if (_primitiveTypes.containsKey(typeName)) {
+        return _primitiveTypes[typeName];
+      }
+      switch (typeName) {
+        case 'record':
+          var record = new Record(obj['name'], obj['namespace'], _fieldListFromJsonArray(obj['fields']));
+          if (record.name != null) {
+            definedTypes[record.name] = record;
+          }
+          return record;
+        default: throw new AvroTypeError('Undefined type "$typeName"');
+      }
+    } else if (obj is List) {
+      throw new NotImplementedException();
+    } else {
+      throw new SchemaParseError('Expected JSON string, object, or array; got $json');
+    }
+  }
+
+  List<Field> _fieldListFromJsonArray(List rawFields) {
+    var fields = [];
+    for (int i = 0; i < rawFields.length; i++) {
+      var f = rawFields[i];
+      fields.add(new Field(f['name'], definedTypes[f['type']], f['default'], i));
+    }
+    return fields;
+  }
+}
 
 /**
  * Represents an Avro schema. See
@@ -38,29 +83,13 @@ abstract class Schema {
    * See http://avro.apache.org/docs/current/spec.html#schemas for more information.
    */
   factory Schema.parse(String json) {
-    var obj = JSON.parse(json);
-    if (obj is String) {
-      if (_primitiveTypes.containsKey(obj)) {
-        return _primitiveTypes[obj];
-      } else {
-        throw new AvroTypeError('Undefined type "$obj"');
-      }
-    } else if (obj is Map) {
-      String typeName = obj['type'];
-      if (_primitiveTypes.containsKey(typeName)) {
-        return _primitiveTypes[typeName];
-      }
-      switch (typeName) {
-        case 'record':
-          return new Record(obj['name'], obj['namespace'], obj['fields']);
-        default: throw new AvroTypeError('Undefined type "$typeName"');
-      }
-    } else if (obj is List) {
-      throw new NotImplementedException();
-    } else {
-      throw new SchemaParseError('Expected JSON string, object, or array; got $json');
-    }
+    return new _SchemaParser(json).parsedSchema();
   }
+}
+
+class _DefinedTypeReference implements Schema {
+  final String definedTypeName;
+  _DefinedTypeReference(this.definedTypeName);
 }
 
 abstract class PrimitiveType implements Schema {}
@@ -109,7 +138,19 @@ class AvroString implements PrimitiveType {
 class Record implements Schema {
   final String name;
   final String namespace;
-  final List fields;
+  final List<Field> fields;
   Record(this.name, this.namespace, this.fields);
   String toString() => 'Record($name, $namespace, $fields)';
+}
+
+class Field {
+  final String name;
+  final Schema schema;
+  final Object defaultValue;
+  final int pos;
+  Field(this.name, this.schema, this.defaultValue, this.pos);
+
+  bool operator==(o) => o is Field && this.name == o.name && this.schema == o.schema && JSON.stringify(this.defaultValue) == JSON.stringify(o.defaultValue) && this.pos == o.pos;
+  // TODO: hashCode
+  String toString() => 'Field($name, $schema, $defaultValue, $pos)';
 }

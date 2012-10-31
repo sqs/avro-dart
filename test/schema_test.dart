@@ -64,6 +64,9 @@ void testSchema() {
       test('empty record', () {
         expectRecord('{"type":"record", "name":"EmptyRecord", "fields":[]}', new Record('EmptyRecord', null, []));
       });
+      test('record with null', () {
+        expectRecord('{"type":"record", "name":"RecordWithNull", "fields":[{"type":"null", "name":"nullField"}]}', new Record('RecordWithNull', null, [new Field('nullField', new AvroNull(), null, 0)]));
+      });
     });
     group('unions', () {
       test('not implemented', () {
