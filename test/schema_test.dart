@@ -53,13 +53,8 @@ void testSchema() {
       });
     });
     group('records', () {
-      void expectRecordsEqual(Record actual, Record expected) {
-        expect(actual.name, expected.name);
-        expect(actual.namespace, expected.namespace);
-        expect(actual.fields, expected.fields);
-      }
       void expectRecord(String json, Record expected) {
-        expectRecordsEqual(new Schema.parse(json), expected);
+        expect(new Schema.parse(json), expected);
       }
       test('empty record', () {
         expectRecord('{"type":"record", "name":"EmptyRecord", "fields":[]}', new Record('EmptyRecord', null, []));

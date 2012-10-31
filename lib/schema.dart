@@ -159,6 +159,7 @@ class Record implements Schema {
   final List<Field> fields;
   Record(this.name, this.namespace, this.fields);
   String toString() => 'Record($name, $namespace, $fields)';
+  bool operator==(o) => o is Record && this.name == o.name && this.namespace == o.namespace && Field.fieldListsEqual(this.fields, o.fields);
 }
 
 class Field {
@@ -171,4 +172,12 @@ class Field {
   bool operator==(o) => o is Field && this.name == o.name && this.schema == o.schema && JSON.stringify(this.defaultValue) == JSON.stringify(o.defaultValue) && this.pos == o.pos;
   // TODO: hashCode
   String toString() => 'Field($name, $schema, $defaultValue, $pos)';
+
+  static fieldListsEqual(List<Field> fs1, List<Field> fs2) {
+    if (fs1.length != fs2.length) return false;
+    for (int i = 0; i < fs1.length; i++) {
+      if (fs1[i] != fs2[i]) return false;
+    }
+    return true;
+  }
 }
