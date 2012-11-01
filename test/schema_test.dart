@@ -80,6 +80,14 @@ void testSchema() {
         expect(new Schema.parse('{"type":"enum", "name":"MyEnum", "symbols":["A","B"]}'), new Enum('MyEnum', null, ['A', 'B']));
       });
     });
+    group('arrays', () {
+      test('array with int (primitive type) items', () {
+        expect(new Schema.parse('{"type":"array", "items":"int"}'), new ArraySchema(new AvroInt()));
+      });
+      test('array with enum (complex type) items', () {
+        expect(new Schema.parse('{"type":"array", "items":{"type":"enum", "name":"MyEnum", "symbols":["A","B"]}}'), new ArraySchema(new Enum('MyEnum', null, ['A', 'B'])));
+      });
+    });
     group('unions', () {
       test('union with no branches', () {
         expect(new Schema.parse('[]'), new Union([]));

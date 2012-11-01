@@ -55,6 +55,8 @@ class _SchemaParser {
           var e = new Enum(obj['name'], obj['namespace'], obj['symbols']);
           _typeScope.addType(e.name, e.namespace, e);
           return e;
+        case 'array':
+          return new ArraySchema(_parse(obj['items']));
         default: throw new AvroTypeError('Undefined type "$typeName"');
       }
     } else if (obj is List) {
@@ -211,6 +213,15 @@ class Enum implements Schema {
     }
     return true;    
   }
+}
+
+class ArraySchema implements Schema {
+  final Schema elementType;
+  ArraySchema(this.elementType);
+
+  bool operator==(o) => o is ArraySchema && this.elementType == o.elementType;
+  // TODO: hashCode
+  String toString() => 'ArraySchema($elementType)';
 }
 
 class Union implements Schema {
